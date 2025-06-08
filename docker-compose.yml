@@ -1,0 +1,50 @@
+
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: v13_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: v13_db
+      MYSQL_USER: v13_user
+      MYSQL_PASSWORD: v13_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./database/mysql-data:/var/lib/mysql
+      - ./database/migration.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  backend:
+    build: ./backend
+    container_name: v13_backend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_USER: v13_user
+      DB_PASSWORD: v13_pass
+      DB_NAME: v13_db
+
+  frontend:
+    build: ./frontend
+    container_name: v13_frontend
+    restart: always
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+  admin:
+    build: ./admin
+    container_name: v13_admin
+    restart: always
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend
